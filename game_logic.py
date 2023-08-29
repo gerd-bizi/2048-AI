@@ -6,8 +6,8 @@ import copy
 import numpy as np
 from typing import Union
 
-# todo
-# make islegal() method in Game() class which doesn't move any pieces but checks if a move is legal. should be just the move function without adding tile
+# # todo
+# # make islegal() method in Game() class which doesn't move any pieces but checks if a move is legal. should be just the move function without adding tile
 
 def new_window():
     window = tk.Tk()
@@ -252,12 +252,11 @@ class Game:
         self.board.add_tile(tile_value, x, y)
 
     def display_updated_board(self):
-        if self.num_moves % self.no_display == 0:
-            if self.use_gui:
-                self.board.tkinter_print(self.score)
-            else:
-                print(f"--------------------SCORE: {self.score}--------------------")
-                self.board.print(highest=len(str(self.highest_tile)))
+        if self.use_gui:
+            self.board.tkinter_print(self.score)
+        else:
+            print(f"--------------------SCORE: {self.score}--------------------")
+            self.board.print(highest=len(str(self.highest_tile)))
 
     def left(self):
         return self.move(1)
@@ -273,7 +272,7 @@ class Game:
 
     def move(self, direction: int, print_board: bool = True, illegal_warn: bool = True, add_tile=True) -> bool:
         """returns whether it was successful
-        :param add_tile (bool) whether to add a new tile after sucesfully moving
+        :param add_tile (bool) whether to add a new tile after successfully moving
         """
         # 0 = right, 1 = left, 2 = up, 3 = down
         if direction not in (0, 1, 2, 3):
@@ -431,6 +430,29 @@ class Game:
                     return False
         # No empty tiles and no adjacent tiles with the same value
         return True
+    
+    def game_won(self) -> bool:
+        """
+        Returns if a 2048 tile is present in the game
+        """
+        for y in range(4):
+            for x in range(4):
+                if self.board.value_of_position(x, y) == 2048:
+                    return True
+        return False
+    
+    def possible_moves(self) -> list:
+        """
+        Returns a list of possible moves
+        """
+        possible_moves = []
+        for direction in range(4):
+            #Make a copy of the game
+            game_copy = copy.deepcopy(self)
+            #Try to move in the direction
+            if game_copy.move(direction, print_board=False, illegal_warn=False):
+                possible_moves.append(direction)
+        return possible_moves
 
 
 def run_game(game=None):
@@ -441,7 +463,6 @@ def run_game(game=None):
     game.display_updated_board()
 
     while True:
-        #running_game.display_updated_board()
         move = input("direction (w, a, s, d): ")
         # 0 = right, 1 = left, 2 = up, 3 = down
 
@@ -453,102 +474,13 @@ def run_game(game=None):
             game.left()
         elif move == "d":
             game.right()
+        game.display_updated_board()
 
 
 
 
 if __name__ == '__main__':
-    from all_AI_iterations import MDP2, MC12
-
-
-    # run_game(False)
-    depth_dict_2 = {
-        15: 12,
-        14: 12,
-        13: 12,
-        12: 12,
-        11: 12,
-        10: 16,
-        9: 16,
-        8: 20,
-        7: 20,
-        6: 84,
-        5: 100,
-        4: 125,
-        3: 165,
-        2: 250,
-        1: 500
-    }
-    depth_dict_4 = {
-        15: 8,
-        14: 8,
-        13: 8,
-        12: 8,
-        11: 8,
-        10: 8,
-        9: 12,
-        8: 12,
-        7: 12,
-        6: 12,
-        5: 20,
-        4: 24,
-        3: 28,
-        2: 52,
-        1: 100
-    }
-    import time
-    i = 1
-
-    # demo game
-    sample_board = [[256, 512, 1024, 2048],
-                    [128, 64, 32, 16, 8],
-                    [64, 2, 4, 4],
-                    [128, 2, 0, 0]]
-    # sample_board = [[256, 512, 1024, 2048],
-    #                 [128, 64, 32, 16],
-    #                 [32, 2, 4, 4],
-    #                 [128, 2, 0, 0]]
-    sample_board_obj = Board(initial_board=sample_board)
-    g = Game(use_gui=True, no_display=False, board=sample_board_obj)
-    g.score = 36120
-
-    start = time.time()
-    g.display_updated_board()
-    time.sleep(1)
-
-    g.right()
-    time.sleep(1)
-    g.display_updated_board()
-
-    g.up()
-    time.sleep(1)
-    g.display_updated_board()
-
-    for i in range(1):
-        g.left()
-        time.sleep(1)
-        g.display_updated_board()
-
-    g.up()
-    time.sleep(1)
-    g.display_updated_board()
-
-    for i in range(3):
-        g.right()
-        time.sleep(1)
-        g.display_updated_board()
-    print(time.time() - start)
-    tk.mainloop()
-    # while True:
-    #     start_time = time.time()
-    #     g = Game(use_gui=True, no_display=False)
-    #     g.setup_board()
-    #     # m = MDP2(g, game_obj=Game, verbose=False, best_proportion=1, core_params = np.array([527, 55, 28, 19, 8.2]))  # best one in sobol sampling so far
-    #     g.display_updated_board()
-    #     m = MC12(g, game_obj=Game, best_proportion=0.25, verbose=False)
-    #     m.run()
-    #     print(f"IT TOOK {time.time() - start_time}s to run on {i}")
-    #     i += 1
+    run_game()
 
 
 
